@@ -1,0 +1,17 @@
+[package]
+name = "vestingContract"
+version = "1.0.0"
+authors = []
+
+[addresses]
+vestingContract="0x260dc208918945107256f6b96920c71852d0635b914773d96d6236cf25be0646"
+my_addrx = "0x260dc208918945107256f6b96920c71852d0635b914773d96d6236cf25be0646"
+
+[dev-addresses]
+
+[dependencies.AptosFramework]
+git = "https://github.com/aptos-labs/aptos-core.git"
+rev = "mainnet"
+subdir = "aptos-move/framework/aptos-framework"
+
+[dev-dependencies]
