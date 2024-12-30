@@ -1,4 +1,4 @@
-module vestingContract::VestingContract {
+module vestingContract::VestingContractV2 {
     use aptos_std::table::{Self, Table};
     use std::signer;
     use aptos_framework::account;
@@ -45,7 +45,7 @@ module vestingContract::VestingContract {
 
     /// Initializes the contract and sets up the data structure to hold vesting streams.
     /// Only the owner can initialize the contract
-    public fun initialize(account: &signer) {
+    public entry fun initialize(account: &signer) {
         let addr = signer::address_of(account);
         assert_is_owner(addr);
 
@@ -55,9 +55,10 @@ module vestingContract::VestingContract {
         move_to(account, vesting_data);
     }
 
+
     /// Adds a new vesting stream for a specified beneficiary.
     /// Only the owner can add users, and the `total_amount` must be greater than zero.
-    public fun add_user (
+    public entry fun add_user (
         account: &signer,
         beneficiary: address,
         total_amount: u64,
@@ -92,13 +93,13 @@ module vestingContract::VestingContract {
 
     /// Checks the claimable amount for a beneficiary based on the current time.
     /// This considers the vesting schedule, cliff, and already claimed amount.
+    // #[view]
     public fun check_claimable_amount(
-        account: &signer,
+       account: &signer,
         beneficiary: address,
         current_time: u64
     ) :u64 acquires VestingStreams  {
         let addr = signer::address_of(account);
-
         // Retrieve the vesting stream
         let vesting_data = borrow_global<VestingStreams>(addr);
         let stream = table::borrow(&vesting_data.streams, beneficiary);
@@ -175,6 +176,7 @@ module vestingContract::VestingContract {
 
     // Initialize the contract
     initialize(&admin);
+
 
     // Add a user with a vesting stream
     let beneficiary = @0x1;
@@ -278,6 +280,7 @@ module vestingContract::VestingContract {
     // Initialize the contract
     initialize(&admin);
 
+
     // Add a user with a vesting stream
     let beneficiary = @0x1;
     let total_amount = 1000;
@@ -356,6 +359,8 @@ module vestingContract::VestingContract {
     let current_time2 = start_time + 60 * 60 * 24 * 30 * 2 + 20; // 2 months + 20 seconds
     let claim_amount2 = 600; // This exceeds the maximum claimable amount
 
+ 
+
     let claimable_at_end2 = check_claimable_amount(&admin, beneficiary, current_time2);
     debug::print(&string::utf8(b"Claimable amount before 3 months: "));
     debug::print(&claimable_at_end2);
@@ -401,6 +406,7 @@ module vestingContract::VestingContract {
     // Simulate claiming all tokens after the vesting duration
     let current_time = start_time + 60 * 60 * 24 * 30 * 4; // End of duration
     let claim_amount = total_amount;
+
 
     // Check claimable amount before claiming
     let claimable_before = check_claimable_amount(&admin, beneficiary, current_time);

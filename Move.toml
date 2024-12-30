@@ -1,6 +1,6 @@
 [package]
-name = "vestingContract"
-version = "1.0.0"
+name = "vestingContractV2"
+version = "1.0.1"
 authors = []
 
 [addresses]
