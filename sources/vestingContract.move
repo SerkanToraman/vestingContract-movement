@@ -93,15 +93,14 @@ module vestingContract::VestingContractV2 {
 
     /// Checks the claimable amount for a beneficiary based on the current time.
     /// This considers the vesting schedule, cliff, and already claimed amount.
-    // #[view]
+    #[view]
     public fun check_claimable_amount(
-       account: &signer,
+        account: address,
         beneficiary: address,
         current_time: u64
     ) :u64 acquires VestingStreams  {
-        let addr = signer::address_of(account);
         // Retrieve the vesting stream
-        let vesting_data = borrow_global<VestingStreams>(addr);
+        let vesting_data = borrow_global<VestingStreams>(account);
         let stream = table::borrow(&vesting_data.streams, beneficiary);
 
         // If the current time is before the cliff, nothing is claimable
@@ -176,7 +175,8 @@ module vestingContract::VestingContractV2 {
 
     // Initialize the contract
     initialize(&admin);
-
+    // Extract the address from the signer
+    let admin_addr = signer::address_of(&admin);
 
     // Add a user with a vesting stream
     let beneficiary = @0x1;
@@ -196,14 +196,14 @@ module vestingContract::VestingContractV2 {
 
     // Simulate checking claimable amount before the cliff
     let current_time = start_time + 60 * 60 * 24 * 30; // 1 month (before cliff)
-    let claimable_before_cliff = check_claimable_amount(&admin, beneficiary, current_time);
+    let claimable_before_cliff = check_claimable_amount(admin_addr, beneficiary, current_time);
     debug::print(&string::utf8(b"Claimable amount before cliff: ",));
     debug::print(&claimable_before_cliff);
     assert!(claimable_before_cliff == 0, 0); // Nothing claimable before the cliff
 
     // Simulate checking claimable amount after 3 months (1 month after cliff)
     let current_time_after_cliff = start_time + 60 * 60 * 24 * 30 * 3; // 3 months
-    let claimable_after_cliff = check_claimable_amount(&admin, beneficiary, current_time_after_cliff);
+    let claimable_after_cliff = check_claimable_amount(admin_addr, beneficiary, current_time_after_cliff);
     let expected_claimable_after_cliff = (total_amount * (current_time_after_cliff - start_time)) / (4 * 60 * 60 * 24 * 30);
     debug::print(&string::utf8(b"Claimable amount after 3 months, 1 month after cliff: ",));
     debug::print(&expected_claimable_after_cliff);
@@ -211,7 +211,7 @@ module vestingContract::VestingContractV2 {
 
     // Simulate checking claimable amount at the end of vesting duration
     let current_time_end = start_time + 60 * 60 * 24 * 30 * 4; // 4 months
-    let claimable_at_end = check_claimable_amount(&admin, beneficiary, current_time_end);
+    let claimable_at_end = check_claimable_amount(admin_addr, beneficiary, current_time_end);
     debug::print(&string::utf8(b"Claimable amount at the end of vesting duration: ",));
     debug::print(&claimable_at_end);
     assert!(claimable_at_end == total_amount, 0); // All tokens should be claimable
@@ -279,7 +279,8 @@ module vestingContract::VestingContractV2 {
 
     // Initialize the contract
     initialize(&admin);
-
+     // Extract the address from the signer
+    let admin_addr = signer::address_of(&admin);
 
     // Add a user with a vesting stream
     let beneficiary = @0x1;
@@ -301,7 +302,7 @@ module vestingContract::VestingContractV2 {
     let current_time1 = start_time + 60 * 60 * 24 * 30 * 2 + 1;
     let claim_amount1 = 300;
 
-    let claimable_at_end1 = check_claimable_amount(&admin, beneficiary, current_time1);
+    let claimable_at_end1 = check_claimable_amount(admin_addr, beneficiary, current_time1);
     debug::print(&string::utf8(b"Claimable amount after cliff: "));
     debug::print(&claimable_at_end1);
 
@@ -320,6 +321,8 @@ module vestingContract::VestingContractV2 {
 
     // Initialize the contract
     initialize(&admin);
+    // Extract the address from the signer
+    let admin_addr = signer::address_of(&admin);
 
     // Add a user with a vesting stream
     let beneficiary = @0x1;
@@ -341,7 +344,7 @@ module vestingContract::VestingContractV2 {
     let current_time1 = start_time + 60 * 60 * 24 * 30 * 2 + 1;
     let claim_amount1 = 300;
 
-    let claimable_at_end1 = check_claimable_amount(&admin, beneficiary, current_time1);
+    let claimable_at_end1 = check_claimable_amount(admin_addr, beneficiary, current_time1);
     debug::print(&string::utf8(b"Claimable amount after cliff: "));
     debug::print(&claimable_at_end1);
 
@@ -361,7 +364,7 @@ module vestingContract::VestingContractV2 {
 
  
 
-    let claimable_at_end2 = check_claimable_amount(&admin, beneficiary, current_time2);
+    let claimable_at_end2 = check_claimable_amount(admin_addr, beneficiary, current_time2);
     debug::print(&string::utf8(b"Claimable amount before 3 months: "));
     debug::print(&claimable_at_end2);
 
@@ -407,9 +410,11 @@ module vestingContract::VestingContractV2 {
     let current_time = start_time + 60 * 60 * 24 * 30 * 4; // End of duration
     let claim_amount = total_amount;
 
+     // Extract the address from the signer
+    let admin_addr = signer::address_of(&admin);
 
     // Check claimable amount before claiming
-    let claimable_before = check_claimable_amount(&admin, beneficiary, current_time);
+    let claimable_before = check_claimable_amount(admin_addr, beneficiary, current_time);
     debug::print(&string::utf8(b"Claimable amount before claiming all tokens: "));
     debug::print(&claimable_before);
     assert!(claimable_before == total_amount, 0); // Ensure all tokens are claimable
